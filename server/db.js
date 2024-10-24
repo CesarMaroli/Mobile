@@ -36,10 +36,6 @@ const User = sequelize.define('user', {
         type: Sequelize.DataTypes.ENUM('ativo', 'inativo'),
         allowNull: false,
         defaultValue: 'inativo'
-    },
-    cpf:{
-        type: Sequelize.DataTypes.STRING,
-        allowNull: true,
     }
 })
 
