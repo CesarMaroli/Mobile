@@ -1,30 +1,38 @@
 import React from "react";
 import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
-import { Link } from "expo-router";
 import { router } from "expo-router";
 
-const Login = () => {
+const Cadastro = () => {
+    const [nome, setNome] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [senha, setSenha] = React.useState("");
+    const [sobrenome, setSobrenome] = React.useState("");
+    const [telefone, setTelefone] = React.useState("");
 
-    const fazerLogin = async () => {
-        console.log(email);
-        if (!email || !senha) {
+    const enviarCadastro = async () => {
+        if (!nome || !senha || !email || !sobrenome || !telefone) {
             alert("Preencha todos os campos corretamente");
             return;
         }
         try {
-            const resposta = await fetch('http://localhost:8000/autenticacao/login', {
+            const resposta = await fetch('http://localhost:8000/autenticacao/registro', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, senha }),
+                body: JSON.stringify({
+                    nome,
+                    sobrenome,
+                    email,
+                    senha,
+                    telefone,
+                }),
             });
-            
+
             if (resposta.status === 200) {
-                router.replace('./home');
+                alert("Usuário criado com sucesso");
+                router.replace('../home');
             } else if (resposta.status === 409) {
                 alert("Email já cadastrado");
             }
@@ -35,9 +43,22 @@ const Login = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>SpotFake</Text>
-
+            <Text style={styles.title}>Preencha seus dados</Text>
             <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.input}
+                    onChangeText={setNome}
+                    value={nome}
+                    placeholder="Escreva seu nome"
+                    placeholderTextColor="#B3B3B3"
+                />
+                <TextInput
+                    style={styles.input}
+                    onChangeText={setSobrenome}
+                    value={sobrenome}
+                    placeholder="Escreva seu sobrenome"
+                    placeholderTextColor="#B3B3B3"
+                />
                 <TextInput
                     style={styles.input}
                     onChangeText={setEmail}
@@ -53,16 +74,16 @@ const Login = () => {
                     placeholderTextColor="#B3B3B3"
                     secureTextEntry
                 />
-                <Text style={styles.registerText}>
-                    Não tem uma conta? Cadastre-se aqui
-                </Text>
+                <TextInput
+                    style={styles.input}
+                    onChangeText={setTelefone}
+                    value={telefone}
+                    placeholder="Escreva seu telefone"
+                    placeholderTextColor="#B3B3B3"
+                />
             </View>
-
-            <Link href={'./cadastro'} style={styles.linkButton}>
-                <Text style={styles.buttonText}>Cadastro</Text>
-            </Link>
-            <Pressable style={styles.button} onPress={fazerLogin}>
-                <Text style={styles.buttonText}>Entrar</Text>
+            <Pressable style={styles.button} onPress={enviarCadastro}>
+                <Text style={styles.buttonText}>Enviar Registro</Text>
             </Pressable>
         </View>
     );
@@ -77,14 +98,13 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     title: {
-        fontSize: 36,
-        color: '#1DB954',
+        fontSize: 28,
+        color: '#FFFFFF',
         marginBottom: 30,
         fontWeight: 'bold',
     },
     inputContainer: {
         width: '100%',
-        marginBottom: 20,
     },
     input: {
         borderColor: '#B3B3B3',
@@ -95,27 +115,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#282828',
         color: '#FFFFFF',
     },
-    registerText: {
-        color: '#B3B3B3',
-        textAlign: 'center',
-        marginVertical: 15,
-    },
-    linkButton: {
-        backgroundColor: 'transparent',
-        borderColor: '#1DB954',
-        borderWidth: 1,
-        borderRadius: 50,
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        marginTop: 10,
-        alignItems: 'center',
-    },
     button: {
         backgroundColor: '#1DB954',
         borderRadius: 50,
         paddingVertical: 12,
         paddingHorizontal: 30,
-        marginTop: 10,
+        marginTop: 20,
         alignItems: 'center',
     },
     buttonText: {
@@ -125,4 +130,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Login;
+export default Cadastro;
