@@ -1,91 +1,179 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, {useState} from "react";
+import { View, Text, StyleSheet, TextInput, Pressable, Image, ScrollView } from "react-native";
+import { Link, router } from "expo-router";
 
-const FormularioUsuario = () => {
-  const [form, setForm] = useState({
-    nome: '',
-    sobrenome: '',
-    email: '',
-    senha: '',
-    telefone: '',
-  });
+export default function Cadastro() { 
+    const [data, setData] = useState({
+        nome: '',
+        sobreNome: '',
+        email: '',
+        senha: '',
+        dataNascimento: ''
+    });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/usuarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      if (response.ok) {
-        console.log('Usuário cadastrado com sucesso!');
-      } else {
-        console.error('Erro ao cadastrar usuário');
+    const handleSignup = async () => {
+      try {
+          const response = await fetch("http://localhost:8000/autenticacao/registro", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Accept": "*/*"
+              },
+              body: JSON.stringify({
+                  "nome": data.nome,
+                  "sobrenome": data.sobreNome,
+                  "email": data.email,
+                  "senha": data.senha,
+                  "dataNascimento": data.dataNascimento
+              })
+          });
+  
+          if (!response.ok) {
+              const errorMessage = await response.text();
+              alert(`Erro: ${errorMessage}`);
+              return;
+          }
+  
+          const successMessage = await response.text();
+          alert(successMessage);
+          router.navigate('/'); 
+      } catch (error) {
+          alert('Erro de conexão com o servidor. Por favor, tente novamente mais tarde.');
+          console.error('Erro:', error);
       }
-    } catch (error) {
-      console.error('Erro de conexão:', error);
-    }
   };
 
   return (
-    <Form>
-      <Input name="nome" placeholder="Nome" onChange={handleChange} />
-      <Input name="sobrenome" placeholder="Sobrenome" onChange={handleChange} />
-      <Input name="email" placeholder="Email" onChange={handleChange} />
-      <Input name="senha" type="password" placeholder="Senha" onChange={handleChange} />
-      <Input name="telefone" placeholder="Telefone" onChange={handleChange} />
-      <Button onClick={handleSubmit}>Enviar</Button>
-    </Form>
+    <ScrollView style={style.container}>
+      <Image
+        style={style.logoLogin}
+        source={require("../../assets/images/1.png")}
+      />
+      <View style={style.form}>
+        <View style={style.inputContainer}>
+          <Text style={style.label}>Nome</Text>
+          <TextInput
+           style={style.input} 
+           placeholder="Nome" 
+           value={data.nome}
+           onChangeText={(valor)=>{setData({ ...data, nome: valor})}}
+           />
+        </View>
+
+        <View style={style.inputContainer}>
+          <Text style={style.label}>Sobrenome</Text>
+          <TextInput 
+            style={style.input} 
+            placeholder="Sobrenome" 
+            value={data.sobreNome}
+            onChangeText={(valor)=>{setData({ ...data, sobreNome: valor})}}           
+            />
+        </View>
+
+        <View style={style.inputContainer}>
+          <Text style={style.label}>Email</Text>
+          <TextInput
+            style={style.input}
+            keyboardType="email-address"
+            placeholder="E-mail"
+            value={data.email}
+            onChangeText={(valor)=>{setData({ ...data, email: valor})}}
+          />
+        </View>
+
+        <View style={style.inputContainer}>
+          <Text style={style.label}>Senha</Text>
+          <TextInput
+            secureTextEntry={true}
+            style={style.input}
+            placeholder="Senha"
+            value={data.senha}
+            onChangeText={(valor)=>{setData({ ...data, senha: valor})}}
+          />
+        </View>
+
+        <View style={style.inputContainer}>
+          <Text style={style.label}>Data de Nascimento</Text>
+          <TextInput
+            style={style.input}
+            placeholder="Data de Nascimento"
+            value={data.dataNascimento}
+            onChangeText={(valor)=>{setData({ ...data, dataNascimento: valor})}}
+          />
+        </View>
+        <Text style={style.label}>Já possui cadastro? Fazer <Link href="/"><Text style={style.link}>Login</Text></Link></Text>
+        <Pressable onPress={handleSignup}>
+          <Text style={style.botao}>Sign Up</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
-};
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0 auto;
-  padding: 20px;
-  width: 100%;
-  max-width: 400px;
-  background-color: #f4f4f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-`;
+}
 
-// Estilos para os inputs
-const Input = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-  outline: none;
+const style = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',  // Preto
+  },
 
-  &::placeholder {
-    color: #888;
-    font-style: italic;
-  }
-`;
+  logoLogin: {
+    resizeMode: 'cover',
+    width: 400,
+    height: 300,
+    alignSelf: 'center', 
+  },
+  
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: 'center', 
+    rowGap: 10,
+    paddingBottom: 20, 
+  },
 
-// Estilos para o botão
-const Button = styled.button`
-  padding: 12px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  input: {
+    height: 40,
+    margin: 15,
+    borderWidth: 1,
+    padding: 10,
+    width: 350,
+    borderRadius: 10,
+    backgroundColor: '#FFF',
+    fontSize: 15,
+  },
 
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
+  link:{
+    color:'#00ff43',  // Verde
+    textDecorationLine: 'underline'
+  },
 
-export default FormularioUsuario;
+  titleForm: {
+    textAlign: "center",
+    fontSize: 30,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: 'white',
+  },
+
+  inputContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+
+  botao: {
+    backgroundColor: '#D3E70A', 
+    borderRadius: 20,
+    textAlign: 'center',
+    padding: 10,
+    color: '#000', 
+    width: 150,
+    margin: 10,
+    alignSelf: "center"
+  },
+
+  label: {
+    marginLeft: 12,
+    color: "white",
+  },
+});

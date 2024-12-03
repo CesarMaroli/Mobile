@@ -1,128 +1,150 @@
-import React from "react";
-import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
-import { Link } from "expo-router";
-import { router } from "expo-router";
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, Image } from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import { AppContext } from '../scripts/userContext'; 
 
-const Login = () => {
-    const [email, setEmail] = React.useState("");
-    const [senha, setSenha] = React.useState("");
+export default function Login() {
+  const [data, setData] = useState({
+    email: '',
+    senha: ''
+  });
+  const { updateUser } = useContext(AppContext);
+  const router = useRouter();
 
-    const fazerLogin = async () => {
-        console.log(email);
-        if (!email || !senha) {
-            alert("Preencha todos os campos corretamente");
-            return;
-        }
-        try {
-            const resposta = await fetch('http://localhost:8000/autenticacao/login', {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, senha }),
-            });
-            
-            if (resposta.status === 200) {
-                router.replace('./home');
-            } else if (resposta.status === 409) {
-                alert("Email já cadastrado");
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    };
-
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>SpotFake</Text>
-
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={setEmail}
-                    value={email}
-                    placeholder="Escreva seu email"
-                    placeholderTextColor="#B3B3B3"
-                />
-                <TextInput
-                    style={styles.input}
-                    onChangeText={setSenha}
-                    value={senha}
-                    placeholder="Escreva sua senha"
-                    placeholderTextColor="#B3B3B3"
-                    secureTextEntry
-                />
-                <Text style={styles.registerText}>
-                    Não tem uma conta? Cadastre-se aqui
-                </Text>
-            </View>
-
-            <Link href={'./cadastro'} style={styles.linkButton}>
-                <Text style={styles.buttonText}>Cadastro</Text>
-            </Link>
-            <Pressable style={styles.button} onPress={fazerLogin}>
-                <Text style={styles.buttonText}>Entrar</Text>
-            </Pressable>
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('API_URL', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+        }),
+      });
+  
+      const catchMessage = await response.json();
+  
+      if (response.ok) {
+        const { userData } = catchMessage; 
+        updateUser({
+          nome: userData.nome,
+          sobreNome: userData.sobrenome,
+          email: userData.email, 
+          dataNascimento: userData.dataNascimento,
+          senha: data.senha, 
+        });
+        router.push('/home'); 
+      } else {
+        alert(catchMessage.message || 'Erro ao fazer login');
+      }
+    } catch (error) {
+      console.log(error);
+      alert('Erro ao conectar ao servidor');
+    } finally {
+      router.push('/home'); 
+    }
+  };
+  return (
+    <View style={style.container}>
+      <Image
+        style={style.logoLogin}
+        source={require("../assets/images/1.png")}
+      />
+      <View style={style.form}>
+        <View style={style.inputContainer}>
+          <Text style={style.label}>Email</Text>
+          <TextInput
+            style={style.input}
+            keyboardType="email-address"
+            placeholder="E-mail"
+            value={data.email}
+            onChangeText={(valor) => { setData({ ...data, email: valor }) }}
+          />
         </View>
-    );
-};
+        <View style={style.inputContainer}>
+          <Text style={style.label}>Senha</Text>
+          <TextInput
+            secureTextEntry={true}
+            style={style.input}
+            placeholder="Senha"
+            value={data.senha}
+            onChangeText={(valor) => { setData({ ...data, senha: valor }) }}
+          />
+        </View>
+        <Text style={style.label}>
+          Não possui cadastro? <Link href="./cadastro"><Text style={style.link}>Cadastre-se Agora</Text></Link>
+        </Text>
+        <Pressable onPress={handleLogin} style={style.botao}>
+          <Text style={style.botaoText}>Entrar</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#121212',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-    },
-    title: {
-        fontSize: 36,
-        color: '#1DB954',
-        marginBottom: 30,
-        fontWeight: 'bold',
-    },
-    inputContainer: {
-        width: '100%',
-        marginBottom: 20,
-    },
-    input: {
-        borderColor: '#B3B3B3',
-        borderWidth: 1,
-        borderRadius: 8,
-        padding: 12,
-        marginTop: 15,
-        backgroundColor: '#282828',
-        color: '#FFFFFF',
-    },
-    registerText: {
-        color: '#B3B3B3',
-        textAlign: 'center',
-        marginVertical: 15,
-    },
-    linkButton: {
-        backgroundColor: 'transparent',
-        borderColor: '#1DB954',
-        borderWidth: 1,
-        borderRadius: 50,
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        marginTop: 10,
-        alignItems: 'center',
-    },
-    button: {
-        backgroundColor: '#1DB954',
-        borderRadius: 50,
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        marginTop: 10,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
+const style = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',  
+    alignItems: 'center',
+    backgroundColor: '#000',  
+    padding: 20,
+  },
+  logoLogin: {
+    resizeMode: 'cover',
+    width: 350,
+    height: 250,
+    marginBottom: 40,
+  },
+  form: {
+    width: '80%',  
+    display: "flex",
+    flexDirection: "column",
+    alignItems: 'center',
+    rowGap: 20,
+  },
+  input: {
+    height: 45,
+    margin: 10,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    width: '100%',
+    borderRadius: 10,
+    backgroundColor: '#FFF',
+    fontSize: 14,
+  },
+  link: {
+    color: "#D3E70A",  
+    textDecorationLine: "underline"
+  },
+  label: {
+    marginLeft: 12,
+    color: "#FFF",  
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  inputContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    width: '100%',
+  },
+  botao: {
+    backgroundColor: '#D3E70A',  
+    borderRadius: 20,
+    textAlign: 'center',
+    paddingVertical: 12,
+    color: '#000',  
+    width: '100%',  
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
+    alignItems: 'center',  
+  },
+  botaoText: {
+    color: '#000',  
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
 });
-
-export default Login;
